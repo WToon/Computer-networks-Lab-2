@@ -36,7 +36,7 @@ public class Client {
 	public static void main(String[] args) {
 		
 		sendInitialRequest(new Request(args));
-		
+
 		for (Request request: requests) {
 			System.out.println(request.getRequest());
 			try (Socket socket = new Socket(request.getHostname(), request.getPort())){
@@ -49,7 +49,7 @@ public class Client {
 	            
 				HttpFactory factory = new HttpFactory(request, input);
 				
-				factory.getHeader().getContent();
+				// factory.getHeader().getContent();
 				
 				socket.close();
 	            

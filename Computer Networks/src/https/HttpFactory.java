@@ -62,16 +62,12 @@ public class HttpFactory {
 			this.body = new Body("html", request.getHostname());
 			StringBuilder bodyContent = new StringBuilder();
 			PrintWriter outputFile = new PrintWriter("saved/pages/" + request.getHostname() +".html");
-			String line; Boolean html = false;
+			String line;
 			while ((line = reader.readLine()) != null) {
-				if (line.equals("<HTML>")) {
-					html = true;
-				}
-				if (html) {
-					bodyContent.append(line);
-					bodyContent.append("\n");
-					outputFile.println(line);
-				}
+				bodyContent.append(line);
+				bodyContent.append("\n");
+				outputFile.println(line);
+
 				if (line.equals("</HTML>")) {
 					break;
 				}
@@ -79,29 +75,34 @@ public class HttpFactory {
 			body.setText(bodyContent.toString());
 			outputFile.close();
 		}
-		// JPG
-		else if (header.getContentType().equals("image/jpg")) { 
+		// JPEG
+		else if (header.getContentType().equals("image/jpeg")) { 
 			this.body = new Body("jpg", request.getHostname());
-			readImageBody();
+			readAndSaveImage();
 		}
 		// PNG
 		else if (header.getContentType().equals("image/png")) {
 			this.body = new Body("png", request.getHostname());
-			readImageBody();
+			readAndSaveImage();
 		}
 	}
 	
-	
-	public void readImageBody() throws IOException {
+	// TODO doesn't work
+	public void readAndSaveImage() throws IOException {
+		System.out.println("saving");
 		FileOutputStream out = new FileOutputStream("saved/images/" + request.getPath());
-		try {
-            int c;
-            while ((c = input.read()) != -1) {
-                out.write(c);
-            }
-		} finally {
-			out.close();
-		}
+		
+	    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+	    int nRead;
+	    byte[] data = new byte[1024];
+	    while ((nRead = input.read(data, 0, data.length)) != -1) {
+	        buffer.write(data, 0, nRead);
+	    }
+	 
+	    buffer.flush();
+	    byte[] image = buffer.toByteArray();
+		out.write(image);
+		out.close();
 	}
 
 	

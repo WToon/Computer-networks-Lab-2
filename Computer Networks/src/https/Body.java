@@ -32,22 +32,6 @@ public class Body {
 			contentType = 2;
 		}
 	}
-
-	public String getText() {
-		return text;
-	}
-
-	public byte[] getImage() {
-		return image;
-	}
-
-	public void setText(String text) {
-		this.text = text;
-	}
-
-	public void setImage(byte[] image) {
-		this.image = image;
-	}
 	
 	public ArrayList<Request> generateImageRequests() {
 		ArrayList<Request> requests = new ArrayList<>();
@@ -61,6 +45,13 @@ public class Body {
 		return requests;
 	}
 	
+	public String getText() {
+		return text;
+	}
+
+	public byte[] getImage() {
+		return image;
+	}
 	
 	public void getContent() {
 		switch (contentType) {
@@ -68,8 +59,13 @@ public class Body {
 			case 2: System.out.println(getImage()); break;
 		}
 	}
-	
-	
-	
+
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	public void setImage(byte[] image) {
+		this.image = image;
+	}	
 }
 
