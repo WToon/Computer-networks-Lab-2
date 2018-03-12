@@ -4,7 +4,7 @@ import util.URL;
 
 public class Request {
 	
-	private String command, port, protocol, path, hostname;
+	private String command, port="80", protocol="HTTP/1.1", path, hostname;
 	private URL url;
 	private String request;
 	
@@ -18,11 +18,18 @@ public class Request {
 		formatRequest();
 	}
 	
-	public Request(String command, String path, String url) {
+	public Request(String command, String path, String baseUri) {
 		this.command = command;
-
-		this.port = "80";
-		this.protocol = "HTTP/1.1";
+		this.path = path;
+		this.hostname = baseUri;
+		formatRequest();
+	}
+	
+	public Request(String command, String url) {
+		this.command = command;
+		this.url = new URL(url);
+		this.path = this.url.getPath();
+		this.hostname = this.url.getHostname();
 		formatRequest();
 	}
 	
@@ -32,7 +39,6 @@ public class Request {
 	}
 
 	public String getRequest() {
-		System.out.println(request);
 		return request;
 	}
 
@@ -61,6 +67,6 @@ public class Request {
 	}
 	
 	public String getCleanFileName() {
-		return hostname.substring(hostname.indexOf(".")+1, hostname.lastIndexOf("."));
+		return path.substring(1);
 	}
 }
