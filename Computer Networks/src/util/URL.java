@@ -26,7 +26,7 @@ public class URL {
 		}
 	}
 	
-	/*
+	/**
 	 * Example: 	URL 		= https://www.example.com/path_1/path_2
 	 * 				hostname 	= www.example.com
 	 * 				path 		= /path_1/path_2

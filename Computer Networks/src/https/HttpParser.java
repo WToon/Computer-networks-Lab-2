@@ -1,9 +1,11 @@
 package https;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,12 +39,17 @@ public class HttpParser {
 	public HttpParser(Request request, InputStream input) {
 		this.input = input;
 		this.request = request;
+	}
+	
+	public void parse(Request request) {
+		this.request = request;
 		try {
 			parseHTTPHeaders();
 			parseHTTPBody();
 		} catch(Exception e) {
 			System.out.println("In Factory - Parsing Error");
 		}
+		
 	}
 	
 	
@@ -69,7 +76,6 @@ public class HttpParser {
 	        }
 	    }
 
-	    //TODO map(connection status response - needed for serverside)
 	    String[] headersArray = sb.toString().split("\r\n");
 	    Map<String, String> headers = new HashMap<>();
 	    for (int i = 1; i < headersArray.length - 1; i++) {
@@ -96,25 +102,18 @@ public class HttpParser {
 		String type = headers.get("Content-Type");
 		
 		if (type.equals("text/html")) {
-		    int charRead = 0;
+		    String line;
 		    StringBuffer sb = new StringBuffer();
+		    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 		    PrintWriter outputFile = new PrintWriter("saved/pages/" + request.getCleanFileName() + ".html");
-		    while (charRead != -1) {
-		        sb.append((char) (charRead = input.read()));
-		        if ((char) charRead == '\r') {           		// if we've got a '\r'
-		            sb.append((char) input.read()); 			// 	then write '\n'
-		            charRead = input.read();        			// 	read the next char;
-		            if (charRead == '\r') {                  	// if it's another '\r'
-		                sb.append((char) input.read());			// 	write the '\n'
-		                break;
-		            } else {
-		                sb.append((char) charRead);
-		            }
-		        }
-		    }
-	        String[] body = sb.toString().split("\n");
-		    for (int i = 1; i < body.length - 1; i++) {
-		    	outputFile.println(body[i]);
+		    
+		    while (true) {
+		    	line = reader.readLine();
+		    	sb.append(line);
+		    	outputFile.println(line);
+		    	if (line.equals("</HTML>")) {
+		    		break;
+		    	}
 		    }
 		    outputFile.close();
 		    generateImageRequests(sb.toString());
@@ -154,7 +153,6 @@ public class HttpParser {
 	    while (buffer.size() != Integer.parseInt(headers.get("Content-Length"))) {
 	    	nRead = input.read(data, 0, data.length);
 	    	buffer.write(data, 0, nRead);
-	        System.out.println(buffer.size());
 	    }
 	    buffer.flush();
 	    byte[] image = buffer.toByteArray();
