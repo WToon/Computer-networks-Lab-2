@@ -63,6 +63,9 @@ public class Request {
 	}
 	
 	public String getCleanFileName() {
-		return (hostname.substring(hostname.indexOf(".")+1, hostname.lastIndexOf(".")));
+		if (path.equals("/"))
+			return (hostname.substring(hostname.indexOf(".")+1, hostname.lastIndexOf(".")));
+		else
+			return(path.substring(1,path.indexOf(".")));
 	}
 }

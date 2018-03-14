@@ -16,7 +16,7 @@ public class Client {
 	 */
 	private static void requestWebPage(Request request) {
 		try (Socket socket = new Socket(request.getHostname(), request.getPort())){
-			// 
+			
 			InputStream input = socket.getInputStream();
 			OutputStream output = socket.getOutputStream();
 

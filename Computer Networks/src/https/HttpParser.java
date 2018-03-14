@@ -82,7 +82,7 @@ public class HttpParser {
 	                headersArray[i].split(": ")[1]);
 	    }
 	    
-	    PrintWriter outputFile = new PrintWriter("saved/headers/" + request.getCleanFileName()+"-headers");
+	    PrintWriter outputFile = new PrintWriter("saved/headers/" + request.getCleanFileName() + "-header");
 	    String[] fileArray = sb.toString().split("\n");
 	    for (String i : fileArray) {
 	    	outputFile.write(i);
