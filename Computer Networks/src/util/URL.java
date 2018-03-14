@@ -1,7 +1,7 @@
 package util;
 
 /**
- * The URL class implements a URL parser.
+ * The URL class implements a URL parser and formatter.
  * 
  * @author R0596433
  *	

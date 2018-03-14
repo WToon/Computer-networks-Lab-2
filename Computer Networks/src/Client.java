@@ -4,6 +4,11 @@ import java.io.*;
 
 import https.*;
 
+/**
+ * Class representing the client side of a TCP connection.
+ * @author R0596433
+ *
+ */
 public class Client {
 
 	private static ArrayList<Request> requests = new ArrayList<>();	
@@ -11,10 +16,10 @@ public class Client {
 	/**
 	 * This method requests, processes and saves a web page and the associated embedded objects.
 	 * All requests are handled over the same connection.
-	 * TODO Implement support for embedded objects on remote servers.
+	 * TODO Move this method into an HttpCommands
 	 * @param request The initial webpage-request.
 	 */
-	private static void requestWebPage(Request request) {
+	private static void sendRequest(Request request) {
 		try (Socket socket = new Socket(request.getHostname(), request.getPort())){
 			
 			InputStream input = socket.getInputStream();
@@ -23,10 +28,10 @@ public class Client {
 			PrintWriter writer = new PrintWriter(output, true);
 			writer.println(request.getRequest());
 
-			HttpParser parser = new HttpParser(input);
+			Parser parser = new Parser(input);
 			parser.parse(request);
 
-			for (Request nR: parser.getRequests()) {
+			for (Request nR: parser.getImageRequests()) {
 				requests.add(nR);
 			}				
 			
@@ -50,7 +55,7 @@ public class Client {
 	}
 
 	public static void main(String[] args) {
-		requestWebPage(new Request(args));
+		sendRequest(new Request(args));
 	}
 }
 

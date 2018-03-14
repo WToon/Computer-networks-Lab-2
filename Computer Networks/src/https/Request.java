@@ -2,6 +2,12 @@ package https;
 
 import util.URL;
 
+
+/**
+ * This class creates instances of client-to-server requests
+ * @author R0596433
+ *
+ */
 public class Request {
 	
 	private String command, port="80", protocol="HTTP/1.1", path, hostname;
@@ -33,6 +39,10 @@ public class Request {
 		formatRequest();
 	}
 	
+	
+	/**
+	 * Format the request into a server-side readable form.
+	 */
 	private void formatRequest() {
 		request = command + " " + path + " " + protocol + "\r\n" +
 				  "Host: " + hostname + ":" + port + "\r\n";
@@ -62,6 +72,11 @@ public class Request {
 		return path;
 	}
 	
+	
+	/**
+	 * Creates a clean filename. This is mainly used when saving files locally.
+	 * @return
+	 */
 	public String getCleanFileName() {
 		if (path.equals("/"))
 			return (hostname.substring(hostname.indexOf(".")+1, hostname.lastIndexOf(".")));

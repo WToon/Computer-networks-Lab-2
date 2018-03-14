@@ -1,12 +1,11 @@
 package https;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,11 +18,12 @@ import org.jsoup.select.Elements;
 /**
  * This class parses an HTTP response. It supports several content types such as:
  * 	- text/html		- image/png		- image/jpeg
- * It stores the connection information and content of the respones locally in 'saved'.
+ * It stores the connection information and content of the respones locally in the 'saved' folder.
+ * 
  * @author R0596433
  *
  */
-public class HttpParser {
+public class Parser {
 	
 	private InputStream input;
 	private Map<String, String> headers;
@@ -32,14 +32,19 @@ public class HttpParser {
 	
 	
 	/**
-	 * Create a HttpFactoryObject.
-	 * @param request
-	 * @param input
+	 * Create a parser.
+	 * @param input		The inputstream containing the server's response.
 	 */
-	public HttpParser(InputStream input) {
+	public Parser(InputStream input) {
 		this.input = input;
 	}
 	
+	
+	/**
+	 * Parse the response to the request.
+	 * 
+	 * @param request	The sent request.
+	 */
 	public void parse(Request request) {
 		this.request = request;
 		try {
@@ -53,8 +58,8 @@ public class HttpParser {
 	
 	
 	/**
-	 * Parse the HTTP-Response's headers. 
-	 * Headers are mapped into this.headers.
+	 * Parse the HTTP-Response's headers. The gathered information is kept in 'headers'.
+	 * 
 	 * @throws IOException
 	 */
 	private void parseHTTPHeaders() throws IOException {
@@ -94,32 +99,37 @@ public class HttpParser {
 	
 	
 	/**
-	 * Parse the HTTPBody taking into account it's body content-type. (e.g. html - image...)
+	 * Parse the HTTPBody taking into account it's body content-type, (e.g. html - image...), 
+	 * and it's body content-length. These parameters are found at the headers.
+	 * 
 	 * @throws IOException
 	 */
 	private void parseHTTPBody() throws IOException {
+		
 		String type = headers.get("Content-Type");
 		
 		if (type.equals("text/html")) {
-		    String line;
-		    StringBuffer sb = new StringBuffer();
-		    BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 		    PrintWriter outputFile = new PrintWriter("saved/pages/" + request.getCleanFileName() + ".html");
-		    
-		    while (true) {
-		    	line = reader.readLine();
-		    	sb.append(line);
-		    	outputFile.println(line);
-		    	if (line.equals("</HTML>")) {
-		    		break;
-		    	}
-		    }
+		    byte[] bhtml = new byte[Integer.parseInt(headers.get("Content-Length"))];
+		    input.read(bhtml, 0, Integer.parseInt(headers.get("Content-Length")));
+		    String html = new String(bhtml, StandardCharsets.UTF_8);
+		    System.out.println(html);
+		    outputFile.write(html);
 		    outputFile.close();
-		    generateImageRequests(sb.toString());
+		    generateImageRequests(html);
 		}
 		
 		else if (type.equals("image/png") || type.equals("image/jpeg")) {
-			readImageBody();
+			FileOutputStream out = new FileOutputStream("saved/images/" + request.getPath());
+			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		    byte[] data = new byte[Integer.parseInt(headers.get("Content-Length"))];
+		    while (buffer.size() != Integer.parseInt(headers.get("Content-Length"))) {
+		    	buffer.write(data, 0, input.read(data, 0, data.length));
+		    }
+		    buffer.close();
+		    byte[] image = buffer.toByteArray();
+			out.write(image);
+			out.close();
 		}
 	}
 
@@ -127,6 +137,7 @@ public class HttpParser {
 	/**
 	 * Generate a 'GET' request for each image found in the html-string.
 	 * The generated requests are saved in 'requests'.
+	 * 
 	 * @param html
 	 */
 	private void generateImageRequests(String html) {
@@ -136,35 +147,13 @@ public class HttpParser {
 			requests.add(new Request("GET", "/" + image.attr("src"), request.getHostname()));
 		}
 	}	
-	
-	
-	/**
-	 * Interpret and save the bodycontent as an image.
-	 * @throws IOException
-	 */
-	private void readImageBody() throws IOException {
 		
-		FileOutputStream out = new FileOutputStream("saved/images/" + request.getPath());
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-	    int nRead;
-	    byte[] data = new byte[1024];
-
-	    while (buffer.size() != Integer.parseInt(headers.get("Content-Length"))) {
-	    	nRead = input.read(data, 0, data.length);
-	    	buffer.write(data, 0, nRead);
-	    }
-	    buffer.flush();
-	    byte[] image = buffer.toByteArray();
-		out.write(image);
-		out.close();
-	}
-	
 	
 	/**
 	 * 
 	 * @return List of requests for embedded objects.
 	 */
-	public ArrayList<Request> getRequests() {
+	public ArrayList<Request> getImageRequests() {
 		return requests;
 	}
 
