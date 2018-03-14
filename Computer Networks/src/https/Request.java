@@ -54,10 +54,6 @@ public class Request {
 		return protocol;
 	}
 
-	public URL getUrl() {
-		return url;
-	}
-	
 	public String getHostname() {
 		return hostname;
 	}
@@ -67,6 +63,6 @@ public class Request {
 	}
 	
 	public String getCleanFileName() {
-		return path.substring(1);
+		return (hostname.substring(hostname.indexOf(".")+1, hostname.lastIndexOf(".")));
 	}
 }

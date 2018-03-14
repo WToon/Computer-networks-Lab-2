@@ -1,64 +1,119 @@
 package https;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+/**
+ * This class parses an HTTP response. It supports several content types such as:
+ * 	- text/html		- image/png		- image/jpeg
+ * It stores the connection information and content of the respones locally in 'saved'.
+ * @author R0596433
+ *
+ */
 public class HttpFactory {
 	
 	private InputStream input;
-	private Header header;
-	private Body body;
-	private BufferedReader reader;
+	private Map<String, String> headers;
 	private Request request;
-		
+	private ArrayList<Request> requests = new ArrayList<>();
+	
+
 	public HttpFactory(Request request, InputStream input) {
 		this.input = input;
-		this.reader = new BufferedReader(new InputStreamReader(input));
-		
-		this.header = new Header();
-		
 		this.request = request;
 		
 		try {
-			parseHeaders();
-			parseBody();
+			parseHTTPHeaders();
+			parseHTTPBody();
 		} catch(Exception e) {
 			System.out.println("In Factory - Parsing Error");
-		}		
-	}
-	
-	
-	private void parseHeaders() throws IOException {
-		PrintWriter outputFile = new PrintWriter("saved/headers/" + request.getCleanFileName()+"-headers");
-		StringBuilder headerContent = new StringBuilder();
-		
-		String line;
-		while ((line = reader.readLine()) != null) {
-			if (line.isEmpty()) {
-				break;
-			}
-			else if (line.contains("Content-Length: ")) {
-				header.setContentLength(Integer.parseInt(line.substring(16)));
-			}
-			else if (line.contains("Content-Type: ")) {
-				header.setContentType(line.substring(14));
-			}
-			headerContent.append(line + "\n");
-			outputFile.println(line);
 		}
-		header.setHeaderContent(headerContent.toString());
-		outputFile.close();
+	}
+	
+
+	private void parseHTTPHeaders() throws IOException {
+		
+	    int charRead;
+	    StringBuffer sb = new StringBuffer();
+	    while (true) {
+	        sb.append((char) (charRead = input.read()));
+	        if ((char) charRead == '\r') {           		// if we've got a '\r'
+	            sb.append((char) input.read()); 			// 	then write '\n'
+	            charRead = input.read();        			// 	read the next char;
+	            if (charRead == '\r') {                  	// if it's another '\r'
+	                sb.append((char) input.read());			// 	write the '\n'
+	                break;
+	            } else {
+	                sb.append((char) charRead);
+	            }
+	        }
+	    }
+
+	    //TODO map(connection status response - needed for serverside)
+	    String[] headersArray = sb.toString().split("\r\n");
+	    Map<String, String> headers = new HashMap<>();
+	    for (int i = 1; i < headersArray.length - 1; i++) {
+	        headers.put(headersArray[i].split(": ")[0],
+	                headersArray[i].split(": ")[1]);
+	    }
+	    
+	    PrintWriter outputFile = new PrintWriter("saved/headers/" + request.getCleanFileName()+"-headers");
+	    String[] fileArray = sb.toString().split("\n");
+	    for (String i : fileArray) {
+	    	outputFile.write(i);
+	    	System.out.print(i);
+	    }
+	    outputFile.close();
+	    this.headers = headers;
 	}
 	
 	
-	private void parseBody() throws IOException {
-		// HTML
-		if (header.getContentType().equals("text/html")) {
+	private void parseHTTPBody() throws IOException {
+		String type = headers.get("Content-Type");
+		
+		if (type.equals("text/html")) {
+		    int charRead = 0;
+		    StringBuffer sb = new StringBuffer();
+		    PrintWriter outputFile = new PrintWriter("saved/pages/" + request.getCleanFileName() + ".html");
+		    while (charRead != -1) {
+		        sb.append((char) (charRead = input.read()));
+		        if ((char) charRead == '\r') {           		// if we've got a '\r'
+		            sb.append((char) input.read()); 			// 	then write '\n'
+		            charRead = input.read();        			// 	read the next char;
+		            if (charRead == '\r') {                  	// if it's another '\r'
+		                sb.append((char) input.read());			// 	write the '\n'
+		                break;
+		            } else {
+		                sb.append((char) charRead);
+		            }
+		        }
+		    }
+	        String[] body = sb.toString().split("\n");
+		    for (int i = 1; i < body.length - 1; i++) {
+		    	outputFile.println(body[i]);
+		    }
+		    outputFile.close();
+		    generateImageRequests(sb.toString());
+		}
+		
+		else if (type.equals("image/png") || type.equals("image/jpeg")) {
+			readImageBody();
+		}
+		
+		
+/*		// HTML
+		if (headers.get("Content-Type").equals("text/html")) {
 			this.body = new Body("html", request.getHostname());
 			StringBuilder bodyContent = new StringBuilder();
 			PrintWriter outputFile = new PrintWriter("saved/pages/" + request.getHostname() +".html");
@@ -76,19 +131,32 @@ public class HttpFactory {
 			outputFile.close();
 		}
 		// JPEG
-		else if (header.getContentType().equals("image/jpeg")) { 
+		else if (headers.getContentType().equals("image/jpeg")) { 
 			this.body = new Body("jpg", request.getHostname());
 			readAndSaveImage();
 		}
 		// PNG
-		else if (header.getContentType().equals("image/png")) {
+		else if (headers.getContentType().equals("image/png")) {
 			this.body = new Body("png", request.getHostname());
 			readAndSaveImage();
+		}*/
+	}
+
+
+	private void generateImageRequests(String html) {
+		Document doc = Jsoup.parse(html, request.getHostname());
+		Elements images = doc.select("img[src$=.png], img[src$=.jpg]");
+		for (Element image : images) {
+			System.out.println(image.attr("src"));
+			requests.add(new Request("GET", "/" + image.attr("src"), request.getHostname()));
 		}
 	}
 	
+	
+	
+	
 	// TODO doesn't work
-	public void readAndSaveImage() throws IOException {
+	public void readImageBody() throws IOException {
 		System.out.println("saving");
 		FileOutputStream out = new FileOutputStream("saved/images/" + request.getPath());
 		
@@ -97,24 +165,19 @@ public class HttpFactory {
 	    byte[] data = new byte[1024];
 	    while ((nRead = input.read(data, 0, data.length)) != -1) {
 	        buffer.write(data, 0, nRead);
+	        System.out.println(buffer.size());
 	    }
 	 
 	    buffer.flush();
+	    System.out.println();
+	    System.out.println(buffer.size());
 	    byte[] image = buffer.toByteArray();
 		out.write(image);
 		out.close();
 	}
-
 	
-	public Header getHeader() {
-		return header;
+	public ArrayList<Request> getRequests() {
+		return requests;
 	}
-
-	public Body getBody() {
-		return body;
-	}
-	
-	
-		
 
 }
