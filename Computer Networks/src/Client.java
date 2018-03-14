@@ -12,19 +12,18 @@ public class Client {
 	 * This method requests, processes and saves a web page and the associated embedded objects.
 	 * All requests are handled over the same connection.
 	 * TODO Implement support for embedded objects on remote servers.
-	 * @param request
+	 * @param request The initial webpage-request.
 	 */
 	private static void requestWebPage(Request request) {
-		System.out.println(request.getRequest());
 		try (Socket socket = new Socket(request.getHostname(), request.getPort())){
-
+			// 
 			InputStream input = socket.getInputStream();
 			OutputStream output = socket.getOutputStream();
 
 			PrintWriter writer = new PrintWriter(output, true);
 			writer.println(request.getRequest());
 
-			HttpParser parser = new HttpParser(request, input);
+			HttpParser parser = new HttpParser(input);
 			parser.parse(request);
 
 			for (Request nR: parser.getRequests()) {
@@ -36,6 +35,8 @@ public class Client {
 				parser.parse(r);
 				System.out.println();
 			}
+			
+			requests.clear();
 
 			socket.close();
 
@@ -49,9 +50,7 @@ public class Client {
 	}
 
 	public static void main(String[] args) {
-		
 		requestWebPage(new Request(args));
-
 	}
 }
 

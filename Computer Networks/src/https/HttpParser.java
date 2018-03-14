@@ -36,9 +36,8 @@ public class HttpParser {
 	 * @param request
 	 * @param input
 	 */
-	public HttpParser(Request request, InputStream input) {
+	public HttpParser(InputStream input) {
 		this.input = input;
-		this.request = request;
 	}
 	
 	public void parse(Request request) {
@@ -47,7 +46,7 @@ public class HttpParser {
 			parseHTTPHeaders();
 			parseHTTPBody();
 		} catch(Exception e) {
-			System.out.println("In Factory - Parsing Error");
+			System.out.println("Parsing Error");
 		}
 		
 	}
@@ -95,7 +94,7 @@ public class HttpParser {
 	
 	
 	/**
-	 * Parse the HTTPBody taking into account it's body content-type.
+	 * Parse the HTTPBody taking into account it's body content-type. (e.g. html - image...)
 	 * @throws IOException
 	 */
 	private void parseHTTPBody() throws IOException {
@@ -127,7 +126,7 @@ public class HttpParser {
 	
 	/**
 	 * Generate a 'GET' request for each image found in the html-string.
-	 * The generated requests are located in this.requests.
+	 * The generated requests are saved in 'requests'.
 	 * @param html
 	 */
 	private void generateImageRequests(String html) {
