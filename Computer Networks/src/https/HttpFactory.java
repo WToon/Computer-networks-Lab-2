@@ -28,11 +28,14 @@ public class HttpFactory {
 	private Request request;
 	private ArrayList<Request> requests = new ArrayList<>();
 	
-
+	/**
+	 * Create a HttpFactoryObject.
+	 * @param request
+	 * @param input
+	 */
 	public HttpFactory(Request request, InputStream input) {
 		this.input = input;
 		this.request = request;
-		
 		try {
 			parseHTTPHeaders();
 			parseHTTPBody();
@@ -41,7 +44,11 @@ public class HttpFactory {
 		}
 	}
 	
-
+	/**
+	 * Parse the HTTP-Response's headers. 
+	 * Headers are mapped into this.headers.
+	 * @throws IOException
+	 */
 	private void parseHTTPHeaders() throws IOException {
 		
 	    int charRead;
@@ -78,7 +85,10 @@ public class HttpFactory {
 	    this.headers = headers;
 	}
 	
-	
+	/**
+	 * Parse the HTTPBody taking into account it's body content-type.
+	 * @throws IOException
+	 */
 	private void parseHTTPBody() throws IOException {
 		String type = headers.get("Content-Type");
 		
@@ -110,39 +120,13 @@ public class HttpFactory {
 		else if (type.equals("image/png") || type.equals("image/jpeg")) {
 			readImageBody();
 		}
-		
-		
-/*		// HTML
-		if (headers.get("Content-Type").equals("text/html")) {
-			this.body = new Body("html", request.getHostname());
-			StringBuilder bodyContent = new StringBuilder();
-			PrintWriter outputFile = new PrintWriter("saved/pages/" + request.getHostname() +".html");
-			String line;
-			while ((line = reader.readLine()) != null) {
-				bodyContent.append(line);
-				bodyContent.append("\n");
-				outputFile.println(line);
-
-				if (line.equals("</HTML>")) {
-					break;
-				}
-			}
-			body.setText(bodyContent.toString());
-			outputFile.close();
-		}
-		// JPEG
-		else if (headers.getContentType().equals("image/jpeg")) { 
-			this.body = new Body("jpg", request.getHostname());
-			readAndSaveImage();
-		}
-		// PNG
-		else if (headers.getContentType().equals("image/png")) {
-			this.body = new Body("png", request.getHostname());
-			readAndSaveImage();
-		}*/
 	}
 
-
+	/**
+	 * Generate a 'GET' request for each image found in the html-string.
+	 * The generated requests are located in this.requests.
+	 * @param html
+	 */
 	private void generateImageRequests(String html) {
 		Document doc = Jsoup.parse(html, request.getHostname());
 		Elements images = doc.select("img[src$=.png], img[src$=.jpg]");
@@ -150,17 +134,17 @@ public class HttpFactory {
 			System.out.println(image.attr("src"));
 			requests.add(new Request("GET", "/" + image.attr("src"), request.getHostname()));
 		}
-	}
+	}	
 	
 	
-	
-	
-	// TODO doesn't work
-	public void readImageBody() throws IOException {
-		System.out.println("saving");
-		FileOutputStream out = new FileOutputStream("saved/images/" + request.getPath());
+	/**
+	 * Interpret and save the bodycontent as an image.
+	 * @throws IOException
+	 */
+	private void readImageBody() throws IOException {
 		
-	    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		FileOutputStream out = new FileOutputStream("saved/images/" + request.getPath());
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 	    int nRead;
 	    byte[] data = new byte[1024];
 	    while ((nRead = input.read(data, 0, data.length)) != -1) {
@@ -169,13 +153,15 @@ public class HttpFactory {
 	    }
 	 
 	    buffer.flush();
-	    System.out.println();
-	    System.out.println(buffer.size());
 	    byte[] image = buffer.toByteArray();
 		out.write(image);
 		out.close();
 	}
 	
+	/**
+	 * 
+	 * @return List of requests for embedded objects.
+	 */
 	public ArrayList<Request> getRequests() {
 		return requests;
 	}

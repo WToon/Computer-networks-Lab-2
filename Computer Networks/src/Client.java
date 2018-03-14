@@ -46,9 +46,7 @@ public class Client {
 				writer.println(request.getRequest());
 	            
 				HttpFactory factory = new HttpFactory(request, input);
-				
-				// factory.getHeader().getContent();
-				
+								
 				socket.close();
 	            
 			} catch (UnknownHostException e) {
