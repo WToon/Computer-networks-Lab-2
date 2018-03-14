@@ -19,9 +19,7 @@ public class Client {
 			writer.println(request.getRequest());
 			
 			HttpFactory factory = new HttpFactory(request, input);
-
-			requests.addAll(factory.getBody().generateImageRequests());
-			
+			requests = factory.getRequests();
 			socket.close();
             
 		} catch (UnknownHostException e) {
