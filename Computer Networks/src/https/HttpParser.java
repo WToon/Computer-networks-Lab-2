@@ -21,19 +21,20 @@ import org.jsoup.select.Elements;
  * @author R0596433
  *
  */
-public class HttpFactory {
+public class HttpParser {
 	
 	private InputStream input;
 	private Map<String, String> headers;
 	private Request request;
 	private ArrayList<Request> requests = new ArrayList<>();
 	
+	
 	/**
 	 * Create a HttpFactoryObject.
 	 * @param request
 	 * @param input
 	 */
-	public HttpFactory(Request request, InputStream input) {
+	public HttpParser(Request request, InputStream input) {
 		this.input = input;
 		this.request = request;
 		try {
@@ -43,6 +44,7 @@ public class HttpFactory {
 			System.out.println("In Factory - Parsing Error");
 		}
 	}
+	
 	
 	/**
 	 * Parse the HTTP-Response's headers. 
@@ -85,6 +87,7 @@ public class HttpFactory {
 	    this.headers = headers;
 	}
 	
+	
 	/**
 	 * Parse the HTTPBody taking into account it's body content-type.
 	 * @throws IOException
@@ -122,6 +125,7 @@ public class HttpFactory {
 		}
 	}
 
+	
 	/**
 	 * Generate a 'GET' request for each image found in the html-string.
 	 * The generated requests are located in this.requests.
@@ -131,7 +135,6 @@ public class HttpFactory {
 		Document doc = Jsoup.parse(html, request.getHostname());
 		Elements images = doc.select("img[src$=.png], img[src$=.jpg]");
 		for (Element image : images) {
-			System.out.println(image.attr("src"));
 			requests.add(new Request("GET", "/" + image.attr("src"), request.getHostname()));
 		}
 	}	
@@ -147,16 +150,18 @@ public class HttpFactory {
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 	    int nRead;
 	    byte[] data = new byte[1024];
-	    while ((nRead = input.read(data, 0, data.length)) != -1) {
-	        buffer.write(data, 0, nRead);
+
+	    while (buffer.size() != Integer.parseInt(headers.get("Content-Length"))) {
+	    	nRead = input.read(data, 0, data.length);
+	    	buffer.write(data, 0, nRead);
 	        System.out.println(buffer.size());
 	    }
-	 
 	    buffer.flush();
 	    byte[] image = buffer.toByteArray();
 		out.write(image);
 		out.close();
 	}
+	
 	
 	/**
 	 * 

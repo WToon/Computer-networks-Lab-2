@@ -34,8 +34,8 @@ public class Request {
 	}
 	
 	private void formatRequest() {
-		request = command + " " + path + " " + protocol + "\n" +
-				  "Host: " + hostname + ":" + port + "\n";
+		request = command + " " + path + " " + protocol + "\r\n" +
+				  "Host: " + hostname + ":" + port + "\r\n";
 	}
 
 	public String getRequest() {

@@ -18,8 +18,9 @@ public class Client {
 			PrintWriter writer = new PrintWriter(output, true);
 			writer.println(request.getRequest());
 			
-			HttpFactory factory = new HttpFactory(request, input);
+			HttpParser factory = new HttpParser(request, input);
 			requests = factory.getRequests();
+
 			socket.close();
             
 		} catch (UnknownHostException e) {
@@ -45,7 +46,7 @@ public class Client {
 				PrintWriter writer = new PrintWriter(output, true);
 				writer.println(request.getRequest());
 	            
-				HttpFactory factory = new HttpFactory(request, input);
+				HttpParser factory = new HttpParser(request, input);
 								
 				socket.close();
 	            
