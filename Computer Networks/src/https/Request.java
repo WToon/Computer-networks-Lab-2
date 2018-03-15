@@ -1,5 +1,7 @@
 package https;
 
+import java.util.Scanner;
+
 import util.URL;
 
 
@@ -10,9 +12,13 @@ import util.URL;
  */
 public class Request {
 	
-	private String command, port="80", protocol="HTTP/1.1", path, hostname;
-	private URL url;
-	private String request;
+	private URL 	url;
+	private String 	command;
+	private String	port 	 ="80";
+	private String 	protocol ="HTTP/1.1";
+	private String 	path;
+	private String 	hostname;
+	private String 	request;
 	
 	public Request(String[] args) {
 		this.command = args[0];
@@ -42,10 +48,40 @@ public class Request {
 	
 	/**
 	 * Format the request into a server-side readable form.
+	 * Types of requests supported:
+	 * 	- HEAD	- GET	- PUT	- POST
 	 */
-	private void formatRequest() {
-		request = command + " " + path + " " + protocol + "\r\n" +
-				  "Host: " + hostname + ":" + port + "\r\n";
+	private void formatRequest() {	
+		if (command.equals("GET") || command.equals("HEAD")) {
+			request = command + " " + path + " " + protocol + "\r\n" + 
+					"Host: " + hostname + ":" + port + "\r\n";
+		}
+		else if (command.equals("PUT")) {
+			Scanner scanner = new Scanner(System.in);
+			System.out.println("Type your message (PUT):\n");
+			String scanned = scanner.nextLine();
+			scanner.close();
+			int contentLength = scanned.length();
+			
+			request = command + " " + "/putText.txt" + " " + protocol + "\r\n" +
+					"Host: " + hostname + ":" + port + "\r\n" + 
+					"Content-Type: text/txt" + "\r\n" + 
+					"Content-length: " + contentLength + "\r\r" +
+					scanned;
+		}
+		else if (command.equals("POST")) {
+			Scanner scanner = new Scanner(System.in);
+			System.out.println("Type your message (POST):\n");
+			String scanned = scanner.nextLine();
+			scanner.close();
+			int contentLength = scanned.length();
+			
+			request = command + " " + "/postText" + " " + protocol + "\r\n" +
+					"Host: " + hostname + ":" + port + "\r\n" + 
+					"Content-Type: text/txt" + "\r\n" + 
+					"Content-length: " + contentLength + "\r\r" +
+					scanned;
+		}
 	}
 
 	public String getRequest() {
@@ -78,9 +114,6 @@ public class Request {
 	 * @return
 	 */
 	public String getCleanFileName() {
-		if (path.equals("/"))
-			return (hostname.substring(hostname.indexOf(".")+1, hostname.lastIndexOf(".")));
-		else
-			return(path.substring(1,path.indexOf(".")));
+		return path.substring(path.lastIndexOf("/")+1);
 	}
 }

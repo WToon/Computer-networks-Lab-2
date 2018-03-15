@@ -2,12 +2,17 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.io.IOException;
 
+/**
+ * Represents a multithreaded server.
+ * @author R0596433
+ * @version 1.0
+ */
 public class Server implements Runnable {
 	
-	protected int serverPort = 8080;
-	protected ServerSocket serverSocket = null;
-	protected Boolean isStopped = false;
-	protected Thread runningThread = null;
+	protected int 			serverPort 	  = 8080;
+	protected ServerSocket 	serverSocket  = null;
+	protected Boolean 		isStopped 	  = false;
+	protected Thread 		runningThread = null;
 
 	public Server(int port) {
 		this.serverPort = port;
@@ -21,6 +26,7 @@ public class Server implements Runnable {
 		openServerSocket();
 		while (! isStopped()) {
 			Socket clientSocket = null;
+
 			try {
 				clientSocket = this.serverSocket.accept();
 			} catch(IOException e) {
@@ -28,9 +34,10 @@ public class Server implements Runnable {
 					System.out.println("Server offline");
 					return;
 				}
-				throw new RuntimeException("Error accepting client connection");
+				throw new RuntimeException("Error accepting client connection", e);
 			}
-			new Thread(new WorkerRunnable(clientSocket, "Multithreaded server")).start();
+
+			new Thread(new ServerThreadRunnable(clientSocket, "Multithreaded server")).start();
 		}
 		System.out.println("Server went offline");
 	}

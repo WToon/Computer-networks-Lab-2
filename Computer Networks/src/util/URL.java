@@ -16,12 +16,15 @@ public class URL {
 	public URL(String url) {
 		// TODO Check URL validity better
 		try {
-			if (!(url.substring(0,8).equals("https://")) & !(url.substring(0, 4).equals("www."))) {
-				System.out.println("Invalid url");
+			if (url.equals("localhost")) {
+				hostname = "localhost";
+				path = "/";
+				filename = "localhost";
 			} else {
 				parseUrl(url);
 			}
 		} catch(Exception e) {
+			System.out.println("Error parsing url");
 			URL = null;
 		}
 	}
@@ -39,19 +42,19 @@ public class URL {
 		this.hostname = url;
 
 		
-		// Prune "https://" extension
-		int index = -1;
-		if (url.substring(0, 8).equals("https://"))
-			url  = url.substring(8);
+		// Prune possible "https://www." extension
+		if (url.lastIndexOf(".") != url.indexOf(".")){
+			url = url.substring(url.indexOf(".")+1);
+		}
 		
 		// Split hostname and path
-		index = url.indexOf("/");
+		int index = url.indexOf("/");
 		if (index != -1) {
 			path = url.substring(index);
 			hostname= url.substring(0, index);
 		}
 		
-		filename = hostname.substring(hostname.indexOf(".")+1, hostname.lastIndexOf("."));
+		filename = hostname.substring(0, hostname.lastIndexOf("."));
 	}
 
 	public String getUrl() {
