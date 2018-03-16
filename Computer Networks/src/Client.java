@@ -14,7 +14,7 @@ public class Client {
 	private static ArrayList<Request> requests = new ArrayList<>();	
 	private static ArrayList<Request> remoteRequests = new ArrayList<>();
 	/**
-	 * This method requests, processes and saves a web page and the associated embedded objects.
+	 * This method requests, processes and saves a web page and the avialable associated embedded objects.
 	 * All requests are handled over the same connection.
 	 * TODO Move this method into an HttpCommands
 	 * @param request The initial webpage-request. (See run configurations)

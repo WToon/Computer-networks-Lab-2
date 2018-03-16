@@ -17,7 +17,7 @@ public class Server implements Runnable {
 	public Server(int port) {
 		this.serverPort = port;
 	}
-	
+
 	@Override
 	public void run() {
 		synchronized(this) {
@@ -36,7 +36,7 @@ public class Server implements Runnable {
 				}
 				throw new RuntimeException("Error accepting client connection", e);
 			}
-
+			System.out.println("new thread");
 			new Thread(new ServerThreadRunnable(clientSocket, "Multithreaded server")).start();
 		}
 		System.out.println("Server went offline");

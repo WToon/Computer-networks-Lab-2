@@ -23,27 +23,29 @@ public class ServerThreadRunnable implements Runnable {
         this.clientSocket = clientSocket;
         this.serverText   = serverText;
     }
-
+    
     public void run() {
         try {
-            InputStream input  = clientSocket.getInputStream();
-            OutputStream output = clientSocket.getOutputStream();
+        	InputStream input  = clientSocket.getInputStream();
+        	OutputStream output = clientSocket.getOutputStream();
 
-            RequestParser parser = new RequestParser(input);
-            parser.parse();
-            
-            
-            Path path = Paths.get("C:\\Users\\Gebruiker\\git\\compnet\\Computer Networks\\server\\webpage.html");
-            
-            output.write(("HTTP/1.1 200 OK\n\r"
-            		+ "WorkerRunnable: " + this.serverText + "\n\r"
-            		+ "Content-Length: "+ Files.readAllBytes(path).length + "\n\r"
-            		+ "Content-Type: text/html\r\r"+ Files.readAllLines(path) + "").getBytes());
-            output.close();
-            input.close();
+        	//RequestParser parser = new RequestParser(input);
+        	//parser.parse();
+
+        	byte[] html = Files.readAllBytes(Paths.get("C:\\Users\\Gebruiker\\git\\compnet\\Computer Networks\\server\\webpage.html"));
+
+        	output.write(("HTTP/1.1 200 OK" + "\r\n" + 
+        			"WorkerRunnable: " + this.serverText + "\r\n" + 
+        			"Content-Type: text/html" + "\r\n" + 
+        			"Content-Length: " + html.length +  
+        			"\n\n").getBytes());
+        	output.write(html);
+        	
+        	output.close();
+        	input.close();
 
         } catch (IOException e) {
-            e.printStackTrace();
+        	e.printStackTrace();
         }
     }
 }

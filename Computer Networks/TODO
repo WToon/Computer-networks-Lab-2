@@ -1,4 +1,9 @@
+TODO
 - ResponseParser still assumes a content body. Add boolean and set after parsing headers.
 - ResponseParser status code needs to be taken into account.
-- ResponseParser take into account charsets when reading html (add charsets to switch)
+
+
+
+DONE
 - ResponseParser support gif images + images found externally
+- ResponseParser take into account charsets when reading html (add charsets to switch)
