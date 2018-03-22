@@ -10,7 +10,7 @@ public class ServerHandler {
 		new Thread(server).start();
 		
 		try {
-		    Thread.sleep(20 * 1000);
+		    Thread.sleep(20 * 100000);
 		} catch (InterruptedException e) {
 		    e.printStackTrace();
 		}

@@ -20,6 +20,7 @@ public class Client {
 	 * @param request The initial webpage-request. (See run configurations)
 	 */
 	private static void sendRequest(Request request) {
+		System.out.println(request.getRequest());
 		try (Socket socket = new Socket(request.getHostname(), request.getPort())){
 
 			InputStream input = socket.getInputStream();
@@ -39,6 +40,8 @@ public class Client {
 			}
 
 			for (Request r: requests) {
+				System.out.println(r.getRequest());
+				System.out.println();
 				writer.println(r.getRequest());
 				parser.parse(r);
 			}
@@ -61,11 +64,15 @@ public class Client {
 	 * @param args The initial client request. (See run configurations)
 	 */
 	public static void main(String[] args) {
-		sendRequest(new Request(args));
+		//sendRequest(new Request(args));
+
+		// sendRequest(new Request(new String[] {"PUT", "localhost", "9000", "HTTP/1.1"}));
+		
+		sendRequest(new Request("POST", "server/chat/newfile", "localhost", "9000"));
+
 		for (Request r: remoteRequests) {
-			sendRequest(r);
+			sendRequest(r);	
 		}
-		//sendRequest(new Request(new String[] {"PUT", "localhost", "9000", "HTTP/1.1"}));
 	}
 }
 

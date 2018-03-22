@@ -2,11 +2,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import https.RequestParser;
+
 
 /**
  * Represents a single thread of the multithreaded server.
@@ -17,33 +15,30 @@ import https.RequestParser;
 public class ServerThreadRunnable implements Runnable {
 
     protected Socket clientSocket = null;
-    protected String serverText   = null;
     
-    public ServerThreadRunnable(Socket clientSocket, String serverText) {
+    public ServerThreadRunnable(Socket clientSocket) {
         this.clientSocket = clientSocket;
-        this.serverText   = serverText;
     }
     
+    /**
+     * Execute the thread, handling the request
+     */
     public void run() {
         try {
-        	InputStream input  = clientSocket.getInputStream();
-        	OutputStream output = clientSocket.getOutputStream();
+        	while (true) {
+            	InputStream input  = clientSocket.getInputStream();
+            	OutputStream output = clientSocket.getOutputStream();
 
-        	//RequestParser parser = new RequestParser(input);
-        	//parser.parse();
-
-        	byte[] html = Files.readAllBytes(Paths.get("C:\\Users\\Gebruiker\\git\\compnet\\Computer Networks\\server\\webpage.html"));
-
-        	output.write(("HTTP/1.1 200 OK" + "\r\n" + 
-        			"WorkerRunnable: " + this.serverText + "\r\n" + 
-        			"Content-Type: text/html" + "\r\n" + 
-        			"Content-Length: " + html.length +  
-        			"\n\n").getBytes());
-        	output.write(html);
-        	
-        	output.close();
-        	input.close();
-
+            	// Parse the received request and generate an appropriate response.
+            	if (input.available() > 0) {
+                	RequestParser parser = new RequestParser(input);
+                	parser.parse();
+                	
+                	// Send the response to the client
+                	output.write((parser.getResponse().getResponseHeaders()).getBytes());
+                	output.write(parser.getResponse().getResponseBody());            		
+            	}
+        	}
         } catch (IOException e) {
         	e.printStackTrace();
         }

@@ -1,5 +1,6 @@
 package https;
 
+import java.io.File;
 import java.util.Scanner;
 
 import util.URL;
@@ -30,10 +31,11 @@ public class Request {
 		formatRequest();
 	}
 	
-	public Request(String command, String path, String baseUri) {
+	public Request(String command, String path, String baseUri, String port) {
 		this.command = command;
 		this.path = path;
 		this.hostname = baseUri;
+		this.port = port;
 		formatRequest();
 	}
 	
@@ -56,17 +58,19 @@ public class Request {
 			request = command + " " + path + " " + protocol + "\r\n" + 
 					"Host: " + hostname + ":" + port + "\r\n";
 		}
+		
 		else if (command.equals("PUT")) {
 			Scanner scanner = new Scanner(System.in);
 			System.out.println("Type your message (PUT):\n");
 			String scanned = scanner.nextLine();
 			scanner.close();
+			
 			int contentLength = scanned.length();
 			
-			request = command + " " + "/putText.txt" + " " + protocol + "\r\n" +
+			request = command + " " + path + " " + protocol + "\r\n" +
 					"Host: " + hostname + ":" + port + "\r\n" + 
 					"Content-Type: text/txt" + "\r\n" + 
-					"Content-length: " + contentLength + "\r\r" +
+					"Content-Length: " + contentLength + "\r\n" +  "\r\n" +
 					scanned;
 		}
 		else if (command.equals("POST")) {
@@ -76,10 +80,10 @@ public class Request {
 			scanner.close();
 			int contentLength = scanned.length();
 			
-			request = command + " " + "/postText" + " " + protocol + "\r\n" +
+			request = command + " " + path + " " + protocol + "\r\n" +
 					"Host: " + hostname + ":" + port + "\r\n" + 
 					"Content-Type: text/txt" + "\r\n" + 
-					"Content-length: " + contentLength + "\r\r" +
+					"Content-Length: " + contentLength + "\r\n" + "\r\n" +
 					scanned;
 		}
 	}
@@ -105,7 +109,18 @@ public class Request {
 	}
 	
 	public String getPath() {
-		return path;
+		makeNecessaryDirs();
+		return "C:/Users/Gebruiker/git/compnet/Computer Networks/saved" + path;
+	}
+	
+	private void makeNecessaryDirs() {
+		if (path.contains("%20")) {
+			path = path.substring(0, path.indexOf("%20")) + " " + path.substring(path.indexOf("%20")+3);
+		}
+		File location = new File("C:/Users/Gebruiker/git/compnet/Computer Networks/saved" + path.substring(0, path.lastIndexOf("/")));
+		if ( ! location.exists()) {
+			location.mkdirs();
+		}
 	}
 	
 	

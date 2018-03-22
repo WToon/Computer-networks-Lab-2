@@ -26,7 +26,6 @@ public class Server implements Runnable {
 		openServerSocket();
 		while (! isStopped()) {
 			Socket clientSocket = null;
-
 			try {
 				clientSocket = this.serverSocket.accept();
 			} catch(IOException e) {
@@ -37,7 +36,7 @@ public class Server implements Runnable {
 				throw new RuntimeException("Error accepting client connection", e);
 			}
 			System.out.println("new thread");
-			new Thread(new ServerThreadRunnable(clientSocket, "Multithreaded server")).start();
+			new Thread(new ServerThreadRunnable(clientSocket)).start();
 		}
 		System.out.println("Server went offline");
 	}
