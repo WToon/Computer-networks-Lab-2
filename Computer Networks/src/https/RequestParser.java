@@ -6,11 +6,16 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Date;
 
 /**
- * SERVERSIDE PARSER!
+ * SERVERSIDE PARSER
  * This parser interprets requests and generates appriopriate responses.
  * @author R0596433
  */
@@ -37,7 +42,7 @@ public class RequestParser {
 				parseRequestBody();
 			}
 			handleRequest();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -51,6 +56,7 @@ public class RequestParser {
 	 */
 	private void parseRequestHeaders() throws IOException {
 
+		// Read the inputstream up until the headers.
 	    int charRead;
 	    StringBuffer sb = new StringBuffer();
 	    while (true) {
@@ -67,21 +73,23 @@ public class RequestParser {
 	        }
 	    }
 	    
+	    // Map all headers.
 	    String[] headersArray = sb.toString().split("\r\n");
 	    Map<String, String> headers = new HashMap<>();
 	    for (int i = 1; i < headersArray.length - 1; i++) {
 	        headers.put(headersArray[i].split(": ")[0],
 	                headersArray[i].split(": ")[1]);
-	    }
-	    
+	    }	    
 	    headers.put("Request-Type", headersArray[0].split(" ")[0]);
 	    headers.put("Content-File",headersArray[0].split(" ")[1]);
 	    this.headers = headers;
-	    
+
+	    // Check if request content is included.
 	    if (headers.get("Request-Type").equals("PUT") || headers.get("Request-Type").equals("POST")) {
 	    	contentAssociated = true;
 	    }
 	}
+	
 	
 	/**
 	 * Read the body associated with the request.
@@ -96,54 +104,100 @@ public class RequestParser {
 	/**
 	 * Handle requests and generate appropriate responses.
 	 * @throws IOException 
+	 * @throws ParseException 
 	 */
-	private void handleRequest() throws IOException {
+	private void handleRequest() throws IOException, ParseException {
 		
-		Boolean fileUpdate = false;
-		StandardOpenOption action = null;
+		// Verify validity of the request (statuscode 404-Bad request)
+		if (! headers.containsKey("Host")) {
+			response = new Response("400", null, null);
+			return;	
+		}
+
+		String fileLocation = headers.get("Content-File");
 		
-		// Differentiate between request types.
+		Boolean ims = false;
+		long time = 0;
+		
+		if (headers.containsKey("If-Modified-Since")) {
+			String _date_ = headers.get("If-Modified-Since");
+			DateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+			Date date = format.parse(_date_);
+			time = date.getTime();
+			ims = true;
+		}
+
+
+
 		switch (headers.get("Request-Type")) {
-		case "GET":
-			String fileLocation = headers.get("Content-File");
+		
+		case "GET":	
 			if (fileLocation.equals("/")) {
-				fileLocation = "C://Users//Gebruiker/git/compnet/Computer Networks/server/webpage.html";
+				fileLocation = "server/webpage.html";
 			}
-			
+
 			File f = new File(fileLocation);
-			
-			if (f.exists()) {
-				response = new Response("200", fileLocation);
+			if (ims){
+				if (f.lastModified() > time) {
+					response = new Response("304", fileLocation, null);
+				}
+			} else if (f.exists()) {
+				response = new Response("200", fileLocation, "GET");
 			} else {
-				System.out.println("file not found 404");
-				System.exit(0);
+				response = new Response("404", null, null);
+			}
+		break;
+
+		case "HEAD": 
+			if (fileLocation.equals("/")) {
+				fileLocation = "server/webpage.html";
 			}
 			
+			File g = new File(fileLocation);
+			
+			if (g.exists()) {
+				response = new Response("200", fileLocation, "HEAD");
+			} else {
+				response = new Response("404", null, null);
+			}
 			break;
-		case "HEAD": break;
-		
+			
 		case "PUT": 
-			action = StandardOpenOption.WRITE;
-			fileUpdate = true;
+			try{
+				handlePRequests(StandardOpenOption.WRITE);
+			} catch (IOException e) {
+				response = new Response("500", null, null);
+				break;
+			}
+			response = new Response("200", fileLocation, "PUT");
 			break;
-		
+			
 		case "POST": 
-			action = StandardOpenOption.APPEND; 
-			fileUpdate = true; 
+			try {
+				handlePRequests(StandardOpenOption.APPEND);	
+			} catch (IOException e) {
+				response = new Response("500", null, null);
+				return;
+			}
+			response = new Response("200", fileLocation, "POST");
 			break;
 		}
-		
-		// Handle put and post writing.
-		if (fileUpdate) {
-			while (true) {
-				try {
-					System.out.println(headers.get("Content-File"));
-					Files.write(Paths.get(headers.get("Content-File")), content, action);
-					break;
-				} catch (Exception e) {
-					File f = new File(headers.get("Content-File"));
-					f.createNewFile();
-				}
+	}
+	
+	/**
+	 * Handle put and post requests.
+	 * @param action PUTrequest -> write; POSTrequest -> append;
+	 * @throws IOException
+	 */
+	private void handlePRequests(StandardOpenOption action) throws IOException {
+		while (true) {
+			try {
+				System.out.println(headers.get("Content-File"));
+				Files.write(Paths.get(headers.get("Content-File")), content, action);
+				break;
+			} catch (Exception e) {
+				File f = new File(headers.get("Content-File"));
+				f.createNewFile();
 			}
 		}
 	}

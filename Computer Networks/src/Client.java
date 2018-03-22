@@ -7,17 +7,17 @@ import https.*;
 /**
  * Represents a client.
  * @author R0596433
- * @version 1.2
  */
 public class Client {
 
 	private static ArrayList<Request> requests = new ArrayList<>();	
 	private static ArrayList<Request> remoteRequests = new ArrayList<>();
+	
+	
 	/**
-	 * This method requests, processes and saves a web page and the avialable associated embedded objects.
-	 * All requests are handled over the same connection.
-	 * TODO Move this method into an HttpCommands
-	 * @param request The initial webpage-request. (See run configurations)
+	 * Processes the given request.
+	 * Additional requests are handled over the same connection if possible.
+	 * @param request The request to be handled.
 	 */
 	private static void sendRequest(Request request) {
 		System.out.println(request.getRequest());
@@ -58,17 +58,25 @@ public class Client {
 			e.printStackTrace();
 		}
 	}
+	
 
 	/**
-	 * Main method for client
-	 * @param args The initial client request. (See run configurations)
+	 * Main method for client. Different cases show different functionality.
+	 * @param args The client request. (See run configurations)
 	 */
 	public static void main(String[] args) {
-		//sendRequest(new Request(args));
-
-		// sendRequest(new Request(new String[] {"PUT", "localhost", "9000", "HTTP/1.1"}));
 		
-		sendRequest(new Request("POST", "server/chat/newfile", "localhost", "9000"));
+		String[] demonstrate = new String[] {"Head request","Get request","Put request","Post request","Run config","NotFound request","Bad request"};
+		String demo = demonstrate[5];
+		
+		switch (demo) {
+		case "NotFound request":sendRequest(new Request("GET", "orange", "localhost", "9000")); 					break;
+		case "Run config": 		sendRequest(new Request(args)); 													break;
+		case "Put request": 	sendRequest(new Request("PUT", "server/chat/newfile.txt", "localhost", "9000")); 	break;
+		case "Post request": 	sendRequest(new Request("POST", "server/chat/newfile.txt", "localhost", "9000"));	break;
+		case "Get request": 	sendRequest(new Request("GET", "/", "localhost", "9000")); 							break;
+		case "Head request": 	sendRequest(new Request("HEAD", "/", "localhost", "9000")); 						break;
+		}
 
 		for (Request r: remoteRequests) {
 			sendRequest(r);	

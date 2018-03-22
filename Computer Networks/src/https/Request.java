@@ -7,9 +7,8 @@ import util.URL;
 
 
 /**
- * This class creates instances of client-to-server requests
+ * This class creates instances of client-to-server requests.
  * @author R0596433
- *
  */
 public class Request {
 	
@@ -113,6 +112,9 @@ public class Request {
 		return "C:/Users/Gebruiker/git/compnet/Computer Networks/saved" + path;
 	}
 	
+	/**
+	 * Create the necessary directories.
+	 */
 	private void makeNecessaryDirs() {
 		if (path.contains("%20")) {
 			path = path.substring(0, path.indexOf("%20")) + " " + path.substring(path.indexOf("%20")+3);

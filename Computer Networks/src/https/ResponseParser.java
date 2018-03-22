@@ -16,7 +16,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 /**
- * CLIENTSIDE PARSER! (DONE)
+ * CLIENTSIDE PARSER
  * This class parses an HTTP response. If the response contains an html 
  * 	- text/html		- image/png		- image/jpeg
  * It stores the connection information and content of the respones locally in the 'saved' folder.
@@ -34,25 +34,20 @@ public class ResponseParser {
 	private Boolean 			hasContent = false;
 
 
-	/**
-	 * HttpResponseParser
-	 * @param input		The inputstream containing the server's response.
-	 */
 	public ResponseParser(InputStream input) {
 		this.input = input;
 	}
 
 
 	/**
-	 * Parse the response to the request.
-	 * 
+	 * Parse the response.
 	 * @param request	The sent request.
 	 */
 	public void parse(Request request) {
 		this.request = request;
 		try {
 			parseHTTPHeaders();
-			if (hasContent) {
+			if (hasContent && request.getCommand().equals("GET")) {
 				parseHTTPBody();
 			}
 		} catch(Exception e) {
@@ -63,8 +58,7 @@ public class ResponseParser {
 
 
 	/**
-	 * Parse the HTTP-Response's headers. The gathered information is kept in 'headers'.
-	 * 
+	 * Parse the HTTP-Response's headers. The gathered information is mapped in 'headers'.
 	 * @throws IOException
 	 */
 	private void parseHTTPHeaders() throws IOException {
@@ -110,7 +104,6 @@ public class ResponseParser {
 	/**
 	 * Parse the HTTPBody taking into account it's body content-type, (e.g. html - image...), 
 	 * and it's body content-length. These parameters are found at the headers.
-	 * 
 	 * @throws IOException
 	 */
 	private void parseHTTPBody() throws IOException {
@@ -157,7 +150,6 @@ public class ResponseParser {
 	/**
 	 * Generate a 'GET' request for each image found in the html-string.
 	 * The generated requests are saved in 'requests'.
-	 * 
 	 * @param html Html-string to parse.
 	 */
 	private void generateImageRequests(String html) {

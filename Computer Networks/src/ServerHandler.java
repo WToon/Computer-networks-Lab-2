@@ -1,5 +1,5 @@
 /**
- * Represents the serverhandler. Can place the server online and take it back offline.
+ * Handles the server.
  * @author R0596433
  * @version 1.0
  */
@@ -10,7 +10,7 @@ public class ServerHandler {
 		new Thread(server).start();
 		
 		try {
-		    Thread.sleep(20 * 100000);
+		    Thread.sleep(20 * 10000);
 		} catch (InterruptedException e) {
 		    e.printStackTrace();
 		}
