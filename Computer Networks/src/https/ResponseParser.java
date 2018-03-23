@@ -81,7 +81,7 @@ public class ResponseParser {
 		String[] headersArray = sb.toString().split("\r\n");
 		Map<String, String> headers = new HashMap<>();
 
-		headers.put("Response-status", headersArray[0].split(" ")[1]);
+		headers.put("Response-Status", headersArray[0].split(" ")[1]);
 		for (int i = 1; i < headersArray.length - 1; i++) {
 			headers.put(headersArray[i].split(": ")[0],
 					headersArray[i].split(": ")[1]);
@@ -95,7 +95,7 @@ public class ResponseParser {
 		}
 		outputFile.close();
 		this.headers = headers;
-		if (headers.keySet().contains("Content-Length")) {
+		if (headers.keySet().contains("Content-Length") && ! headers.get("Response-Status").equals("500")) {
 			hasContent = true;
 		}
 	}

@@ -67,7 +67,7 @@ public class Client {
 	public static void main(String[] args) {
 		
 		String[] demonstrate = new String[] {"Head request","Get request","Put request","Post request","Run config","NotFound request","Bad request"};
-		String demo = demonstrate[5];
+		String demo = demonstrate[2];
 		
 		switch (demo) {
 		case "NotFound request":sendRequest(new Request("GET", "orange", "localhost", "9000")); 					break;
